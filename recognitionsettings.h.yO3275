@@ -3,8 +3,7 @@
 
 #include <vector>
 #include <memory>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
+
 
 class RecognitionSettings
 {
@@ -103,6 +102,14 @@ public:
         return floor_hist_ranges;
     }
 
+    inline void setFrameAngle(double angle) {
+        this->frame_angle = angle;
+    }
+
+    inline double getFrameAngle() const {
+        return frame_angle;
+    }
+
     inline void setConvertScale(double scale) {
         this->convert_scale = scale;
     }
@@ -111,27 +118,22 @@ public:
         return convert_scale;
     }
 
-    inline std::array<cv::Point2f, 4> getBedCorners() const {
-        return bed_corners;
-    }
-
     void  bedRecognition(cv::Mat img);
 
 
 private:
-    int bed_rec_threshold_scale;
-    int med_blur_scale;
-    int hum_cont_threshold_scale;
-    int width;
-    int height;
-    int bed_hist_bins;
-    int floor_hist_bins;
+    int bed_rec_threshold_scale = 60;
+    int med_blur_scale = 5;
+    int hum_cont_threshold_scale = 3;
+    int width = 640;
+    int height = 480;
+    int bed_hist_bins = 5;
+    int floor_hist_bins = 4;
     std::shared_ptr<float> bed_hist_ranges;
     std::shared_ptr<float> floor_hist_ranges;
-    std::array<cv::Point2f, 4> bed_corners;
-
     double min_human_area;
     double max_noise_area;
+    double frame_angle;
     double convert_scale;
 
 };

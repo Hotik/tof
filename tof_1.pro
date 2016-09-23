@@ -14,7 +14,8 @@ SOURCES += main.cpp \
     posefeatures.cpp \
     BodyLocator.cpp \
     newbodylocator.cpp \
-    recognitionsettings.cpp
+    recognitionsettings.cpp \
+    newframeconverter.cpp
 
 HEADERS += \
     ssuexception.h \
@@ -28,7 +29,8 @@ HEADERS += \
     posefeatures.h \
     BodyLocator.h \
     newbodylocator.h \
-    recognitionsettings.h
+    recognitionsettings.h \
+    newframeconverter.h
 
 CONFIG += link_pkgconfig
 

@@ -8,19 +8,17 @@
 
 #include "RecognitionSettings.h"
 
-using namespace std;
-using namespace cv;
 
 class BodyLocator
 {
 protected:
-    shared_ptr<RecognitionSettings> settings;
+    std::shared_ptr<RecognitionSettings> settings;
 
 public:
     BodyLocator();
     virtual ~BodyLocator();
 
-    virtual Mat locateBody(Mat frame, Mat base) = 0;
+    virtual cv::Mat locateBody(cv::Mat frame, cv::Mat base) = 0;
 };
 
 #endif // BODYLOCATOR_H

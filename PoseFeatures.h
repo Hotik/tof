@@ -1,9 +1,7 @@
 #ifndef POSEFEATURES_H
 #define POSEFEATURES_H
 
-#include <array>
-#define  BED_INTENSITY_SIZE  5
-#define FLOOR_INTENSITY_SIZE 4
+#include <vector>
 
 class PoseFeatures
 {
@@ -46,7 +44,7 @@ public:
         this->bed_intensity = arr;
     }
 
-    inline const vector<float>& getBedIntensity() const {
+    inline const std::vector<float>& getBedIntensity() const {
         return bed_intensity;
     }
 
