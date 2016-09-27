@@ -15,13 +15,27 @@ NewFeatureExtractor::~NewFeatureExtractor()
 
 std::shared_ptr<PoseFeatures> NewFeatureExtractor::extractFeatures(Mat frame)
 {
-//    shared_ptr<PoseFeatures> pose_features(new PoseFeatures);
 
-//    changeIntensity(frame, getFrameAngle());
+    if (!is_empty(frame))
+    {
+        shared_ptr<PoseFeatures> pose_features(new PoseFeatures);
+        array<double, 2> area = getHumanArea(frame);
 
+        pose_features.get()->setInBed(is_human_in_bed(frame));
+        pose_features.get()->setAreaInBed(area[0]);
+        pose_features.get()->setAreaNotInBed(area[1]);
+        if (area[0])
+            pose_features.get()->setRelArea(area[1]/area[0]);
+        else
+            pose_features.get()->setRelArea(area[1]);
+        pose_features.get()->setBedIntensity(getBedIntensityHistogram(frame));
+        pose_features.get()->setFloorIntensity(getFLoorIntensityHistogram(frame));
+        pose_features.get()->setHumanLength(getHumanLength(frame));
 
-
-//    return pose_features;
+        return pose_features;
+    }
+    else
+        return nullptr;
 }
 
 
@@ -65,8 +79,13 @@ bool NewFeatureExtractor::is_empty(Mat img)
 
 vector<vector<Point>> NewFeatureExtractor::getHumanContours(Mat img)
 {
+    for (int i = 0; i < img.rows; i++)
+        for (int j = 0; j < img.cols; j++)
+            if (img.at<uint16_t>(i, j) == MAX_COLOR)
+                img.at<uint16_t>(i, j) = 0;
     img.convertTo(img, CV_8U, 1 / settings.get()->getConvertScale());
     Mat mask;
+
     threshold(img, mask, settings.get()->getHumContThresholdScale(), 255, CV_THRESH_BINARY);
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
@@ -90,7 +109,7 @@ array<double, 2> NewFeatureExtractor::getHumanArea(Mat img)
     for( int i = 0; i < img.rows; i++ )
            for(int j = 0; j < img.cols; j++ )
            {
-               if (img.at<uchar>(i, j))
+               if (img.at<uint16_t>(i, j) != MAX_COLOR)
                {
                    if (is_in_bed(j + 1, i + 1))
                        area_in_bed++;
@@ -124,6 +143,7 @@ vector<Point> NewFeatureExtractor::getHumanMaxContour(std::vector<std::vector<Po
 
 double NewFeatureExtractor::getHumanLength(Mat img)
 {
+
     vector<Point> max_contour = getHumanMaxContour(getHumanContours(img));
     Rect brect = boundingRect(max_contour);
     return max(brect.width, brect.height);
@@ -135,7 +155,6 @@ vector<double> NewFeatureExtractor::getBedIntensityHistogram(Mat img)
         for(int j = 0; j < img.cols; j++ )
             if (!is_in_bed(j,i))
                 img.at<uint16_t>(i,j) = 65535;
-
 
 
     int bins = settings.get()->getBedHistBins();
@@ -162,48 +181,23 @@ vector<double> NewFeatureExtractor::getBedIntensityHistogram(Mat img)
 
 vector<double> NewFeatureExtractor::getFLoorIntensityHistogram(Mat img)
 {
-////    Mat img_tmp = img.clone();
-////    img_tmp.convertTo(img_tmp, CV_8U, COLOR_SCALE);
+    int bins = settings.get()->getFloorHistBins();
+    int histSize[] = {bins};
+    const float* ranges[] = {settings.get()->getFloorHistRanges().get()};
+    cv::Mat hist;
+    int channels[] = {0};
+    cv::calcHist(&img, 1, channels, Mat(), hist, 1, histSize, ranges, false, false);
 
-////    Mat dif = getEmptyImage() - img;
-////    Mat tmp = dif.clone();
-////    medianBlur(dif, tmp, getMedianBlurScale());
-////    tmp.convertTo(tmp, CV_8U, COLOR_SCALE);
+    vector<double> intensity(bins);
+    for(int i = 0; i < bins; i++)
+        intensity[i] = hist.at<float>(i);
 
-////    Mat mask;
-////    threshold(tmp, mask, getHumContThresholdScale(), 255, CV_THRESH_BINARY);
-////    tmp.convertTo(tmp, CV_16U, 256);
+    float sum = 0;
+    for (int i = 0; i < bins; i++)
+        sum += intensity[i];
 
-////    Mat hist_img = tmp.clone();
-////    for( int i = 0; i < mask.rows; i++ )
-////        for(int j = 0; j < mask.cols; j++ )
-////            if (mask.at<uchar>(i, j))
-////                hist_img.at<uint16_t>(i, j) = img_tmp.at<uint16_t>(i, j);
-////            else
-////                hist_img.at<uint16_t>(i,j) = 65535;
+    for (int i = 0; i < bins; i++)
+        intensity[i] /= sum;
 
-//    int bins = FLOOR_INTENSITY_SIZE;
-//    int histSize[] = {bins};
-
-//    // Set ranges for histogram bins
-//   //float r1[] = {0.1, 8000, 16000, 25000, 65000};
-//   // float *r1 = getFloorHistRanges().get();
-//    const float* ranges[] = {getFloorHistRanges().get()};
-
-//    cv::Mat hist;
-//    int channels[] = {0};
-//    cv::calcHist(&hist_img, 1, channels, cv::Mat(), hist, 1, histSize, ranges, false, false);
-
-//    vector<float> intensity(bins);
-//    for(int i = 0; i < bins; i++)
-//        intensity[i] = hist.at<float>(i);
-
-//    float sum = 0;
-//    for (int i = 0; i < bins; i++)
-//        sum += intensity[i];
-
-//    for (int i = 0; i < bins; i++)
-//        intensity[i] /= sum;
-
-//    return intensity;
+    return intensity;
 }

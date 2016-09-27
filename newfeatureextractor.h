@@ -12,7 +12,7 @@
 
 #define _USE_MATH_DEFINES
 
-const double MAX_COLOR = 655535;
+const double MAX_COLOR = 65535;
 const double COLOR_SCALE = 0.00390625;
 #define  BED_INTENSITY_SIZE  5
 #define FLOOR_INTENSITY_SIZE 4

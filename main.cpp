@@ -6,6 +6,9 @@
 #include <newbodylocator.h>
 #include <newframeconverter.h>
 #include <vector>
+#include <svm.h>
+
+
 
 using namespace std;
 using namespace cv;
@@ -76,37 +79,78 @@ int main(int argc, char *argv[])
 
     LOG(INFO) << "Image loading finished";
     NewFeatureExtractor fe(rs_ptr);
-
+    vector<shared_ptr<PoseFeatures>> res;
+    int i = 0;
     for (auto ptr : fr.getFrameArray())
     {
-
+        i++;
         Mat mat = ptr.get()->getImage();
         mat = nfc.convert(mat, 27000, 14000, 30000, 14000);
-
         mat = nbl.locateBody(mat, empty);
+        res.push_back(fe.extractFeatures(mat));
+        if (!(i%20))
+            LOG(INFO) <<"COUNT  " << i ;
+    }
+    LOG(INFO) <<"HERE";
+    svm_model svm;
+    svm_problem prob;
+    prob.l = res.size();
+    vector<int> fc = fr.get_frames_classes();
+    double *y  = new double[fc.size()];
+    for (int i = 0; i < fc.size(); i++)
+        y[i] = fc[i];
+    svm_node ** node_array = new svm_node*[res.size()];
+    for (int i = 0; i < res.size(); i++)
+        node_array[i] = new svm_node[14];
 
-         bool emp = fe.is_empty(mat);
-         bool in = fe.is_human_in_bed(mat);
+    for (int i = 0; i < res.size(); i++)
+    {
+        shared_ptr<PoseFeatures> tmp = res[i];
+        node_array[i][0].index = 1;
+        node_array[i][1].index = 2;
+        node_array[i][2].index = 3;
+        node_array[i][3].index = 4;
+        node_array[i][4].index = 5;
 
-         array<double, 2> area = fe.getHumanArea(mat);
-         double length = fe.getHumanLength(mat);
-         vector<double> bed_int= fe.getBedIntensityHistogram(mat);
+        if (tmp)
+        {
+            node_array[i][0].value = tmp.get()->getInBed();
+            node_array[i][1].value = tmp.get()->getAreaInBed();
+            node_array[i][2].value = tmp.get()->getAreaNotInBed();
+            node_array[i][3].value = tmp.get()->getRelArea();
+            node_array[i][4].value = tmp.get()->getHumanLength();
+            vector<double> intens = tmp.get()->getBedIntensity();
+            int j  = 0;
+            for (; j < intens.size(); j++)
+            {
+                node_array[i][5 + j].index = 5 + j;
+                node_array[i][5 + j].value = intens[j];
+            }
 
-
-//        fe.getBedIntensityHistogram(mat);
-//        fe.getFLoorIntensityHistogram(mat);
-//        if (!in)
-//        {
-//            imshow("ooo", mat);
-//            waitKey(0);
-//        }
-
-           //     namedWindow( "Display window", WINDOW_AUTOSIZE );// Create a window for display.
-             //   imshow( "Display window", mat );                   // Show our image inside it.
-               // waitKey(0);                                          // Wait for a keystroke in the window
-
+            intens = tmp.get()->getFloorIntensity();
+            for (int k  = 0; j < intens.size(); j++)
+            {
+                node_array[i][j + k].index = j + k;
+                node_array[i][j + k].value = intens[j];
+            }
+        }
+        else
+        {
+            node_array[i][0].value = 0;
+            node_array[i][1].value = 0;
+            node_array[i][2].value = 0;
+            node_array[i][3].value = 0;
+            node_array[i][4].value = 0;
+            for (int j = 5; i < 15; i++)
+            {
+                node_array[i][j].index = j;
+                node_array[i][j].value = 0;
+            }
+        }
     }
 
+
+    //svm = svm_train();
     LOG(INFO) << "Program end";
 
     return 0;

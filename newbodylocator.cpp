@@ -22,6 +22,7 @@ Mat NewBodyLocator::locateBody(Mat frame, Mat base)
 {
 
     Mat dif = base - frame;
+
     Mat tmp;
     medianBlur(dif, tmp, settings.get()->getMedianBlurScale());
     tmp.convertTo(tmp, CV_8U, 1 / settings.get()->getConvertScale());
@@ -29,9 +30,8 @@ Mat NewBodyLocator::locateBody(Mat frame, Mat base)
     Mat mask;
     threshold(tmp, mask, settings.get()->getHumContThresholdScale(), 255, CV_THRESH_BINARY);
 
-    Mat res = frame.clone();
-    imwrite("1.png", res);
-    waitKey(0);
+    Mat res = dif.clone();
+
     for( int i = 0; i < mask.rows; i++ )
         for(int j = 0; j < mask.cols; j++ )
             if (!mask.at<uchar>(i, j))

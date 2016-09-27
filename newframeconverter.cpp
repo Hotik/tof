@@ -44,7 +44,7 @@ Mat NewFrameConverter::imageTransformation(Mat img, double depthCur, double offs
                {
                    img.at<uint16_t>(i, j) = uint16_t((double(img.at<uint16_t>(i, j)) * depthCur + (offsetCur - offsetNew)*getMaxIntensityValue())/depthNew);
                    if (img.at<uint16_t>(i,j) == tmp)
-                       img.at<uint16_t>(i,j) = 0;
+                      img.at<uint16_t>(i,j) = 0;
                }
     }
     return img;

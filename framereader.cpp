@@ -26,12 +26,20 @@ void FrameReader::load_frames_from_dir(string path)
 {
     DIR *dir;
     struct dirent *entry;
+    int num = 0;
+    for (int i = path.length(); i >= 0; i--)
+        if (isdigit(path[i]))
+        {
+            num = path[i] - '0';
+            break;
+        }
 
     dir = opendir(path.c_str());
     if (!dir) {
         LOG(ERROR) << "Can't find " + path;
         throw FrameReaderException( "Can't find " + path);
     }
+
     else
         while ((entry = readdir(dir)) != NULL)
             if (entry->d_type == isFile)
@@ -39,6 +47,7 @@ void FrameReader::load_frames_from_dir(string path)
                 shared_ptr<Frame> ptr(new Frame(path + entry->d_name));
                 ptr.get()->load();
                 this->frames_array.push_back(ptr);
+                this->frames_classes.push_back(num);
             }
 
 }

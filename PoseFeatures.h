@@ -40,19 +40,19 @@ public:
         return rel_area;
     }
 
-    inline void setBedIntensity(std::vector<float> &arr) {
+    inline void setBedIntensity(std::vector<double> &&arr) {
         this->bed_intensity = arr;
     }
 
-    inline const std::vector<float>& getBedIntensity() const {
+    inline const std::vector<double>& getBedIntensity() const {
         return bed_intensity;
     }
 
-    inline void setFloorIntensity(std::vector<float> &arr) {
+    inline void setFloorIntensity(std::vector<double> &&arr) {
         this->floor_intensity = arr;
     }
 
-    inline const std::vector<float>& getFloorIntensity() const {
+    inline const std::vector<double>& getFloorIntensity() const {
         return floor_intensity;
     }
 
@@ -64,23 +64,23 @@ public:
         return human_length;
     }
 
-    inline void setDelta(double d) {
-        this->delta = d;
-    }
+//    inline void setDelta(double d) {
+//        this->delta = d;
+//    }
 
-    inline double getDelta() const {
-        return delta;
-    }
+//    inline double getDelta() const {
+//        return delta;
+//    }
 
 private:
     bool is_in_bed;
     double area_in_bed;
     double area_not_in_bed;
     double rel_area;
-    std::vector<float> bed_intensity;
-    std::vector<float> floor_intensity;
+    std::vector<double> bed_intensity;
+    std::vector<double> floor_intensity;
     double human_length;
-    double delta;
+    //double delta;
 };
 
 #endif // POSEFEATURES_H

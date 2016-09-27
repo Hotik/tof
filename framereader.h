@@ -58,10 +58,15 @@ public:
         return frames_array;
     }
 
+    inline const std::vector<int> &get_frames_classes() const {
+        return frames_classes;
+    }
+
 private:
     std::string dir_path;
     std::size_t frame_number;
     std::vector<std::shared_ptr<Frame>> frames_array;
+    std::vector<int> frames_classes;
 };
 
 #endif // FRAMEREADER_H
